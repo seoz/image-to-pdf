@@ -26,9 +26,25 @@
             </div>
 
             <div class="actions-area hidden" id="actions-area">
-                <div class="status-text">
-                    <span id="image-count">0</span> images selected
+                <div class="left-actions">
+                    <div class="status-text">
+                        <span id="image-count">0</span> images selected
+                    </div>
+                    
+                    <div class="sort-container">
+                        <label for="sort-select">Sort by:</label>
+                        <select id="sort-select" class="sort-select">
+                            <option value="default">Default</option>
+                            <option value="name-asc">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                            <option value="date-asc">Date (Oldest)</option>
+                            <option value="date-desc">Date (Newest)</option>
+                            <option value="size-asc">Size (Smallest)</option>
+                            <option value="size-desc">Size (Largest)</option>
+                        </select>
+                    </div>
                 </div>
+
                 <div class="buttons">
                     <button id="clear-btn" class="btn btn-danger">Clear All</button>
                     <button id="generate-btn" class="btn btn-primary">

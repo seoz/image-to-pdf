@@ -185,6 +185,46 @@ header p {
     font-weight: 600;
 }
 
+.left-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.sort-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sort-container label {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.sort-select {
+    background: var(--dropzone-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--surface-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    font-size: 0.95rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sort-select:focus, .sort-select:hover {
+    border-color: var(--accent-color);
+}
+
+/* Option styling for webkit (limited cross-browser styling) */
+.sort-select option {
+    background: var(--bg-color);
+    color: var(--text-primary);
+}
+
 .buttons {
     display: flex;
     gap: 1rem;

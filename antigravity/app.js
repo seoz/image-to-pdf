@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // State
     let selectedFiles = []; // Array of file objects representing images
+    let fileCounter = 0; // Counter to maintain original insertion order
 
     // DOM Elements
     const dropzone = document.getElementById('dropzone');
@@ -8,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const actionsArea = document.getElementById('actions-area');
     const previewGrid = document.getElementById('preview-grid');
     const rawImageCount = document.getElementById('image-count');
+    const sortSelect = document.getElementById('sort-select');
     const clearBtn = document.getElementById('clear-btn');
     const generateBtn = document.getElementById('generate-btn');
     const loadingOverlay = document.getElementById('loading-overlay');
@@ -72,10 +74,41 @@ document.addEventListener('DOMContentLoaded', () => {
         // Give each file a unique ID for easier deletion
         newFiles.forEach(f => {
             f.id = Math.random().toString(36).substr(2, 9);
+            f.addedIndex = fileCounter++;
             selectedFiles.push(f);
         });
 
+        sortFiles();
         updateUI();
+    }
+
+    // Handle sort selection change
+    sortSelect.addEventListener('change', () => {
+        sortFiles();
+        updateUI();
+    });
+
+    function sortFiles() {
+        const sortType = sortSelect.value;
+        
+        selectedFiles.sort((a, b) => {
+            if (sortType === 'name-asc') {
+                return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+            } else if (sortType === 'name-desc') {
+                return b.name.localeCompare(a.name, undefined, { numeric: true, sensitivity: 'base' });
+            } else if (sortType === 'date-asc') {
+                return a.lastModified - b.lastModified;
+            } else if (sortType === 'date-desc') {
+                return b.lastModified - a.lastModified;
+            } else if (sortType === 'size-asc') {
+                return a.size - b.size;
+            } else if (sortType === 'size-desc') {
+                return b.size - a.size;
+            } else {
+                // default
+                return a.addedIndex - b.addedIndex;
+            }
+        });
     }
 
     function removeFile(id) {
@@ -105,29 +138,34 @@ document.addEventListener('DOMContentLoaded', () => {
         previewGrid.innerHTML = '';
         
         selectedFiles.forEach((file, index) => {
-            const reader = new FileReader();
+            // Create container synchronously to maintain order
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `
+                <button class="delete-btn" data-id="${file.id}" aria-label="Delete">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+                <span class="preview-number">${index + 1}</span>
+                <img class="preview-img" src="" alt="Preview">
+            `;
+            
+            // Add event listener to delete button
+            const deleteBtn = div.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent dropzone click if within dropzone (it's not)
+                removeFile(file.id);
+            });
 
+            // Append to DOM immediately
+            previewGrid.appendChild(div);
+
+            // Fetch image data asynchronously
+            const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onloadend = () => {
-                const div = document.createElement('div');
-                div.className = 'preview-item';
-                div.innerHTML = `
-                    <button class="delete-btn" data-id="${file.id}" aria-label="Delete">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                    <span class="preview-number">${index + 1}</span>
-                    <img src="${reader.result}" alt="Preview">
-                `;
-                
-                // Add event listener to delete button
-                const deleteBtn = div.querySelector('.delete-btn');
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent dropzone click if within dropzone (it's not)
-                    removeFile(file.id);
-                });
-
-                previewGrid.appendChild(div);
-            }
+                const img = div.querySelector('.preview-img');
+                img.src = reader.result;
+            };
         });
     }
 
