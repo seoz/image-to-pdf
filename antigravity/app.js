@@ -134,6 +134,15 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPreviews();
     }
 
+    function formatBytes(bytes, decimals = 1) {
+        if (!+bytes) return '0 B';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    }
+
     function renderPreviews() {
         previewGrid.innerHTML = '';
         
@@ -141,12 +150,25 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create container synchronously to maintain order
             const div = document.createElement('div');
             div.className = 'preview-item';
+            
+            const dateObj = new Date(file.lastModified);
+            const dateStr = dateObj.toLocaleDateString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+            const sizeStr = formatBytes(file.size);
+
             div.innerHTML = `
-                <button class="delete-btn" data-id="${file.id}" aria-label="Delete">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-                <span class="preview-number">${index + 1}</span>
-                <img class="preview-img" src="" alt="Preview">
+                <div class="image-container">
+                    <button class="delete-btn" data-id="${file.id}" aria-label="Delete">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    <span class="preview-number">${index + 1}</span>
+                    <img class="preview-img" src="" alt="Preview">
+                </div>
+                <div class="file-info">
+                    <div class="file-name" title="${file.name}">${file.name}</div>
+                    <div class="file-details">${dateStr} &bull; ${sizeStr}</div>
+                </div>
             `;
             
             // Add event listener to delete button
