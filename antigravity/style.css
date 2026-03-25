@@ -49,6 +49,7 @@ header h1 {
     margin-bottom: 0.5rem;
     background: linear-gradient(135deg, #60a5fa, #a78bfa);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -202,7 +203,7 @@ header p {
     font-size: 0.95rem;
 }
 
-.sort-select {
+.sort-select, .compression-select {
     background: var(--dropzone-bg);
     color: var(--text-primary);
     border: 1px solid var(--surface-border);
@@ -215,12 +216,13 @@ header p {
     transition: all 0.2s ease;
 }
 
-.sort-select:focus, .sort-select:hover {
+.sort-select:focus, .sort-select:hover,
+.compression-select:focus, .compression-select:hover {
     border-color: var(--accent-color);
 }
 
 /* Option styling for webkit (limited cross-browser styling) */
-.sort-select option {
+.sort-select option, .compression-select option {
     background: var(--bg-color);
     color: var(--text-primary);
 }

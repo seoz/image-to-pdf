@@ -9,7 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const actionsArea = document.getElementById('actions-area');
     const previewGrid = document.getElementById('preview-grid');
     const rawImageCount = document.getElementById('image-count');
+    const estimatedSizeContainer = document.getElementById('estimated-size-container');
+    const estimatedSizeElement = document.getElementById('estimated-size');
     const sortSelect = document.getElementById('sort-select');
+    const compressionSelect = document.getElementById('compression-select');
     const clearBtn = document.getElementById('clear-btn');
     const generateBtn = document.getElementById('generate-btn');
     const loadingOverlay = document.getElementById('loading-overlay');
@@ -88,6 +91,10 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI();
     });
 
+    compressionSelect.addEventListener('change', () => {
+        updateEstimatedSize();
+    });
+
     function sortFiles() {
         const sortType = sortSelect.value;
         
@@ -131,7 +138,34 @@ document.addEventListener('DOMContentLoaded', () => {
             actionsArea.classList.add('hidden');
         }
 
+        updateEstimatedSize();
         renderPreviews();
+    }
+
+    function updateEstimatedSize() {
+        if (selectedFiles.length === 0) {
+            estimatedSizeContainer.classList.add('hidden');
+            return;
+        }
+
+        let totalOriginalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0);
+        const comp = compressionSelect.value;
+        
+        // Basic heuristic for estimating the PDF size
+        let estimatedSize = totalOriginalSize;
+        if (comp === 'low') {
+            estimatedSize = totalOriginalSize * 0.70;
+        } else if (comp === 'medium') {
+            estimatedSize = totalOriginalSize * 0.40;
+        } else if (comp === 'high') {
+            estimatedSize = totalOriginalSize * 0.15;
+        }
+        
+        // Add minor baseline overhead for PDF formatting (~2KB)
+        estimatedSize += 2048;
+
+        estimatedSizeElement.textContent = formatBytes(estimatedSize);
+        estimatedSizeContainer.classList.remove('hidden');
     }
 
     function formatBytes(bytes, decimals = 1) {
@@ -211,11 +245,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     reader.onload = (e) => {
                         const img = new Image();
                         img.onload = () => {
+                            let width = img.width;
+                            let height = img.height;
+                            let dataUrl = e.target.result;
+                            let type = file.type;
+
+                            const compressionLevel = compressionSelect ? compressionSelect.value : 'none';
+                            if (compressionLevel !== 'none') {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                
+                                let scale = 1;
+                                let quality = 0.9;
+                                if (compressionLevel === 'low') {
+                                    scale = 0.8;
+                                    quality = 0.8;
+                                } else if (compressionLevel === 'medium') {
+                                    scale = 0.6;
+                                    quality = 0.6;
+                                } else if (compressionLevel === 'high') {
+                                    scale = 0.4;
+                                    quality = 0.4;
+                                }
+                                
+                                width = Math.max(1, Math.floor(width * scale));
+                                height = Math.max(1, Math.floor(height * scale));
+                                canvas.width = width;
+                                canvas.height = height;
+                                ctx.drawImage(img, 0, 0, width, height);
+                                
+                                type = 'image/jpeg';
+                                dataUrl = canvas.toDataURL(type, quality);
+                            }
+
                             resolve({
-                                dataUrl: e.target.result,
-                                width: img.width,
-                                height: img.height,
-                                type: file.type
+                                dataUrl: dataUrl,
+                                width: width,
+                                height: height,
+                                type: type
                             });
                         };
                         img.onerror = reject;
@@ -248,7 +315,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     doc = new jsPDF({
                         orientation: orientation,
                         unit: 'px',
-                        format: format
+                        format: format,
+                        compress: true
                     });
                 } else {
                     // Add subsequent pages

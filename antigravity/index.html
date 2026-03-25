@@ -43,6 +43,21 @@
                             <option value="size-desc">Size (Largest)</option>
                         </select>
                     </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                        <div class="sort-container">
+                            <label for="compression-select">Compression:</label>
+                            <select id="compression-select" class="compression-select">
+                                <option value="none">None</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <span id="estimated-size-container" class="hidden" style="font-size: 0.75rem; color: var(--text-secondary); padding-left: 2px;">
+                            Est. Size: <span id="estimated-size" style="font-weight: 500; color: var(--text-primary);">0 B</span>
+                        </span>
+                    </div>
                 </div>
 
                 <div class="buttons">
